@@ -41,7 +41,7 @@ export const toggleLikeCreations = async (req, res) => {
     const { userId } = req.auth();
     const { id } = req.body;
 
-    const [creation] = await aql`SELECT * FROM creations WHERE id = ${id}`;
+    const [creation] = await sql`SELECT * FROM creations WHERE id = ${id}`;
 
     if (!creation) {
       return res.json({
@@ -52,18 +52,18 @@ export const toggleLikeCreations = async (req, res) => {
 
     const currentLike = creation.likes;
     const userIdStr = userId.toString();
-    let updateedLikes;
+    let updatedLikes;
     let message;
 
     if (currentLike.includes(userIdStr)) {
-      updateedLikes = currentLike.filter((user) => user !== userIdStr);
+      updatedLikes = currentLike.filter((user) => user !== userIdStr);
       message = "Creation Unliked";
     } else {
-      updateedLikes = [...updateedLikes, userIdStr];
+      updatedLikes = [...currentLike, userIdStr];
       message = "Creation Liked";
     }
 
-    const formattedArray = `{${updateedLikes.json(",")}}`;
+    const formattedArray = `{${updatedLikes.join(",")}}`;
 
     await sql`UPDATE creations SET likes = ${formattedArray}::text[] WHERE id = ${id}`;
 
